@@ -2410,71 +2410,89 @@
     let youtubeReady = false;
     let pendingVideoId = null;
     function onYouTubeIframeAPIReady() {
-      youtubePlayer = new YT.Player("player", {
-        videoId: pendingVideoId || "",
-        playerVars: {
-          controls: 0,
-          playsinline: 1,
-          rel: 0,
-        },
-        events: {
-          onReady: function (event) {
-            youtubeReady = true;
-            const iframe = document.querySelector("#player");
-            if (iframe) {
-              iframe.setAttribute("allow", "fullscreen");
-              iframe.setAttribute("allowfullscreen", "");
+        youtubePlayer = new YT.Player("player", {
+            videoId: pendingVideoId || "",
+            playerVars: {
+                controls: 0,
+                playsinline: 1,
+                rel: 0
+            },
+            events: {
+                onReady: function (event) {
+                    youtubeReady = true;
+                    const iframe = document.querySelector("#player iframe");
+                    if (iframe) {
+                        iframe.setAttribute("allow", "fullscreen");
+                        iframe.setAttribute("allowfullscreen", "");
+                    }
+                    if (pendingVideoId) {
+                        youtubePlayer.loadVideoById(pendingVideoId);
+                    }
+                    setTimeout(() => {
+                        if (youtubePlayer && youtubeReady) {
+                            youtubePlayer.setPlaybackQuality("hd720");
+                        }
+                    }, 500);
+                },
+                onPlaybackQualityChange: function (event) {
+                    console.log("الجودة الحالية:", event.data);
+                    if (event.data !== "hd720") {
+                        setTimeout(() => {
+                            if (youtubePlayer && youtubeReady) {
+                                youtubePlayer.setPlaybackQuality("hd720");
+                            }
+                        }, 100);
+                    }
+                }
             }
-            if (pendingVideoId) {
-              youtubePlayer.loadVideoById(pendingVideoId);
-            }
-          },
-        },
-      });
+        });
     }
     const playPauseBtn = document.getElementById("play_and_pause");
     const fullscreenBtn = document.getElementById("fullscreen");
     const goBackBtn = document.getElementById("goback");
-    const controlButtons = [playPauseBtn, fullscreenBtn, goBackBtn];
+    const controlButtons = [
+        playPauseBtn,
+        fullscreenBtn,
+        goBackBtn
+    ];
     let controlsTimer = null;
     playPauseBtn.onclick = () => {
-      if (!youtubePlayer || !youtubeReady) return;
-      const state = youtubePlayer.getPlayerState();
-      if (state === YT.PlayerState.PLAYING) {
-        youtubePlayer.pauseVideo();
-      } else {
-        youtubePlayer.playVideo();
-      }
-      showControls();
-    };
-    function showControls() {
-      controlButtons.forEach((button) => {
-        button.classList.remove("controls-hidden");
-      });
-      clearTimeout(controlsTimer);
-      controlsTimer = setTimeout(() => {
-        controlButtons.forEach((button) => {
-          button.classList.add("controls-hidden");
-        });
-      }, 1000);
-    }
-    document.getElementById("overlay").addEventListener("click", () => {
-      showControls();
-    });
-    document.getElementById("fullscreen").onclick = async () => {
-    const container = document.getElementById("playerContainer");
-    if (!container) return;
-    try {
-        if (!document.fullscreenElement) {
-            await container.requestFullscreen();
+        if (!youtubePlayer || !youtubeReady) return;
+        const state = youtubePlayer.getPlayerState();
+        if (state === YT.PlayerState.PLAYING) {
+            youtubePlayer.pauseVideo();
         } else {
-            await document.exitFullscreen();
+            youtubePlayer.playVideo();
         }
         showControls();
-    } catch (error) {
-        console.error("Fullscreen failed:", error);
+    };
+    function showControls() {
+        controlButtons.forEach(button => {
+            button.classList.remove("controls-hidden");
+        });
+        clearTimeout(controlsTimer);
+        controlsTimer = setTimeout(() => {
+            controlButtons.forEach(button => {
+                button.classList.add("controls-hidden");
+            });
+        }, 1000);
     }
-};
+    document.getElementById("overlay").addEventListener("click", () => {
+        showControls();
+    })
+    document.getElementById("fullscreen").onclick = async () => {
+        const container = document.getElementById("playerContainer");
+        if (!container) return;
+        try {
+            if (!document.fullscreenElement) {
+                await container.requestFullscreen();
+            } else {
+                await document.exitFullscreen();
+            }
+            showControls();
+        } catch (error) {
+            console.error("Fullscreen failed:", error);
+        }
+    };
   </script>
-  <!-- <script src="test_App.js"></script> -->
 </html>

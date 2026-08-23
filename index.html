@@ -2462,21 +2462,19 @@
       showControls();
     });
     document.getElementById("fullscreen").onclick = async () => {
-      const iframe = document.querySelector("#player");
-      if (!iframe) {
-        console.warn("YouTube iframe غير موجود");
-        return;
-      }
-      try {
-        if (document.fullscreenElement) {
-          await document.exitFullscreen();
+    const container = document.getElementById("playerContainer");
+    if (!container) return;
+    try {
+        if (!document.fullscreenElement) {
+            await container.requestFullscreen();
         } else {
-          await iframe.requestFullscreen();
+            await document.exitFullscreen();
         }
-      } catch (error) {
+        showControls();
+    } catch (error) {
         console.error("Fullscreen failed:", error);
-      }
-    };
+    }
+};
   </script>
   <!-- <script src="test_App.js"></script> -->
 </html>
